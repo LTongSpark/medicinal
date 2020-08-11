@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>微信用户管理页面</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/resources/lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="/resources/css/public.css" media="all">
+    <style>
+        .layui-table-page .layui-laypage {
+            margin: 0;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <fieldset class="table-search-fieldset">
+            <legend>搜索信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">药材名称</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="name" id="name" class="layui-input "
+                                       placeholder="请输入药材名称">
+                            </div>
+                            <div class="layui-inline">
+                                <select name="state" id="state_search" class="layui-inline">
+                                    <option value="-1" selected>全部</option>
+                                    <option value="1">正常</option>
+                                    <option value="2">删除</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="doSearch"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary"><i
+                                    class="layui-icon layui-icon-refresh"></i><span>重置</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+
+        <!--数据表格-->
+        <div>
+            <table class="layui-hide" id="goodsTable" lay-filter="goodsTable"></table>
+            <div id="goodsToolBar" style="display: none">
+                <button type="button" lay-event="add"  class="layui-btn layui-btn-sm">
+                    <i class="layui-icon layui-icon-add-1"></i>添加药材
+                </button>
+            </div>
+            <div id="goodsBar" style="display: none;">
+                <button type="button" lay-event="update"  class="layui-btn layui-btn-sm"><i
+                        class="layui-icon layui-icon-edit"></i>编辑
+                </button>
+                <button type="button" lay-event="delete"  class="layui-btn layui-btn-sm layui-btn-danger"><i
+                        class="layui-icon layui-icon-delete"></i>删除
+                </button>
+            </div>
+        </div>
+        <!--数据变革结束-->
+    </div>
+</div>
+
+
+<!--添加和修改弹出层-->
+<div id="addOrUpdateDiv" style="display: none;padding-top: 10px;padding-right: 1%">
+    <form action="" method="post" class="layui-form" id="dataFrm" lay-filter="dataFrm">
+        <div class="layui-col-md12 layui-col-xs12">
+            <div class="layui-row layui-col-space10">
+                <div class="layui-col-md8">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 15%">药材名称</label>
+                        <div class="layui-input-block" style="margin-left: 22%;">
+                            <input type="hidden" name="id">
+                            <input type="text" class="layui-input input-radius" style="width: 62%" name="name" lay-verify="required" autocomplete="off" placeholder="请输入药材名称">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 15%">药材价格</label>
+                        <div class="layui-input-block" style="margin-left: 22%;">
+                            <input type="hidden" name="id">
+                            <input type="text" class="layui-input input-radius" style="width: 62%" name="price" lay-verify="required|number" placeholder="请输入药材价格">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width: 56px">所属分类</label>
+                            <div class="layui-input-inline">
+                                <select name="typeId" id="typeId"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 15%;">是否精品</label>
+                        <div class="layui-input-inline">
+                            <input type="radio" name="ishot" value="1" title="是" checked>
+                            <input type="radio" name="ishot" value="2" title="否" >
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md4">
+                    <div class="layui-upload-list thumbBox mag0 magt3">
+                        <input type="hidden" name="coverImage" id="coverImage">
+                        <img class="layui-upload-img thumbImg" src="/resources/images/no.jpg" style="width: 248px;height: 175px;position: absolute;right: 40px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label" style="width: 10%;">药材描述</label>
+            <div class="layui-input-block" style="margin-left: 90px;margin-right: 33px;">
+                <textarea name="des" style="height: 150px;" placeholder="请输入内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/resources/lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script type="text/javascript">
+    layui.use(['jquery', 'form', 'layer', 'laydate', 'table','upload'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var layer = layui.layer;
+        var table = layui.table;
+        var upload = layui.upload;
+
+        //初始化表格
+        var tableIns = table.render({
+            elem: "#goodsTable",
+            title: "收货人地址数据表格",
+            url: "/goods/loadAllGoods",
+            toolbar: "#goodsToolBar",
+            defaultToolbar: ['filter'],
+            page: true,
+            cols: [ [
+               // {field:'id',title:'ID',align:'center'},
+                {field:'name',title:'药材名称',align: 'center'},
+                {field:'des',title:'简介',align: 'center'},
+                {field:'ishot',title:'是否精品',align: 'center',templet:function (d) {
+                    var res = "" ;
+                        if(d.ishot == 1){
+                            res = "是"
+                        }else{
+                            res = "否"
+                        }
+                        return res ;
+                    }},
+                {field:'coverImage',title:'图片',align: 'center',templet:function (d) {
+                        return '<img src=/file/showImageByPath?path='+d.coverImage+ '/>';
+                    }
+                },
+                {field:'price',title:'价格',align: 'center'},
+                {field:'typeName',title:'所属分类',align:'center'},
+                {field:'state',title:'状态',align:'center',templet:function (d) {
+                        if(d.state==1){
+                            return "<input type='checkbox' lay-filter='switchState' name='"+d.id+"' lay-skin='switch' lay-text='禁用|正常'>";
+                        }else{
+                            return "<input type='checkbox' lay-filter='switchState' name='"+d.id+"' lay-skin='switch' lay-text='禁用|正常' checked>";
+                        }
+                    }
+                },
+                {field:'createTime',title:'创建时间',align: 'center' },
+                {field:'updateTime',title:'更新时间',align: 'center'},
+                {title:'操作',align: 'center',toolbar: '#goodsBar'}
+            ] ],
+            done:function (data, curr, count) {
+                hoverOpenImg();//显示大图
+                $('table tr').on('click',function(){
+                    $('table tr').css('background','');
+                    $(this).css('background','<%=PropKit.use("config.properties").get("table_color")%>');
+                });
+                //不是第一页时，如果当前返回的数据为0那么就返回上一页
+                if(data.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:curr-1
+                        }
+                    })
+                }
+            }
+        });
+
+
+
+        //监控工具条事件
+        table.on("toolbar(goodsTable)", function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    openAddLayer();
+                    break;
+            };
+        });
+
+        //监控行工具条事件
+        table.on("tool(goodsTable)", function (obj) {
+            //获取当前行数据
+            var data = obj.data;
+            switch (obj.event) {
+                case 'delete':
+                    deleteGoods(data);
+                    break;
+                case 'update':
+                    updateGoods(data);
+                    break;
+            };
+        });
+
+        function hoverOpenImg(){
+            var img_show = null; // tips提示
+            $('td img').hover(function(){
+                var img = "<img class='img_msg' src='"+$(this).attr('src')+"' style='width:130px;' />";
+                img_show = layer.tips(img, this,{
+                    tips:[2, '#fff']
+                    ,area: ['160px']
+                });
+            },function(){
+                layer.close(img_show);
+            });
+            $('td img').attr('style','max-width:100px');
+        }
+
+        //文件上传
+        upload.render({
+            elem: '.thumbBox',
+            url: '/file/uploadFile',
+            acceptMime:'image/*',
+            field:'mf',
+            method : "post",
+            done: function(res, index, upload){
+                var path=res.path;
+                $('.thumbImg').attr('src','/file/showImageByPath?path='+path);
+                $('.thumbBox').css("background","#fff");
+                //给隐藏域赋值
+                $("#coverImage").val(path);
+            }
+        });
+        //switch开关
+        form.on('switch(switchState)', function (data) {
+            var id = data.elem.name;
+            var isChecked = data.elem.checked;
+            $.ajax({
+                type: "post",
+                url: "/goods/updateState",
+                data: {
+                    id: id,
+                    state: isChecked ? 2 : 1
+                },
+                success: function (res) {
+                    var str = isChecked ? '禁用' : '启用';
+                    if (res.code == 200) {
+                        layer.msg(str + "成功！", {icon: 1, time: 2000});
+                    } else {
+                        layer.msg(str + "失败！请重试！", {icon: 5, time: 2000});
+                    }
+                }
+            });
+        });
+
+        //打开添加弹出层
+        function openAddLayer() {
+            mainIndex = layer.open({
+                type:1,
+                content:$("#addOrUpdateDiv"),
+                area:['600px','500px'],
+                title:'添加商品',
+                btn:['添加','取消'],
+                success:function (layero) {
+                    // 添加form标识
+                    layero.addClass('layui-form');
+                    // 将保存按钮改变成提交按钮
+                    layero.find('.layui-layer-btn0').attr({
+                        'lay-filter': 'doSubmit',
+                        'lay-submit': ''
+                    });
+                    $("#dataFrm")[0].reset();
+                    $.get("/goodsType/loadAllGoodsType",{state:1},function (res) {
+                        var data=res.data;
+                        var html='<option value="0">请选择药材分类</option>'
+                        $.each(data,function(index,item){
+                            html+='<option value="'+item.id+'">'+item.name+'</option>'
+                        });
+                        $("#typeId").html(html);
+                        form.render();
+                    })
+                },
+                yes:function () {
+                    submitForm("/goods/addGoods")
+                }
+            });
+        }
+
+        //打开修改的弹出层
+        function updateGoods(data) {
+            mainIndex = layer.open({
+                type:1,
+                content:$("#addOrUpdateDiv"),
+                area:['600px','500px'],
+                title:'修药材',
+                btn:['修改','取消'],
+                success:function (layero) {
+                    // 添加form标识
+                    layero.addClass('layui-form');
+                    // 将保存按钮改变成提交按钮
+                    layero.find('.layui-layer-btn0').attr({
+                        'lay-filter': 'doSubmit',
+                        'lay-submit': ''
+                    });
+                    $("#dataFrm")[0].reset();
+                    //装载新的数据
+                    form.val("dataFrm",data);
+                    //图片进行回显
+                    $(".thumbImg").attr("src",'/file/showImageByPath?path='+data.coverImage);
+                    //下拉列表的回显
+                    $.get("/goodsType/loadAllGoodsType",{state:1},function(res){
+                        var redata=res.data;
+                        var dom=$("#typeId");
+                        var html='<option value="0">请选择药材分类</option>'
+                        $.each(redata,function(index,item){
+                            if (data.typeId===item.id){
+                                html+='<option value="'+item.id+'" selected>'+item.name+'</option>'
+                            }else {
+                                html+='<option value="'+item.id+'">'+item.name+'</option>'
+                            }
+                        });
+                        dom.html(html);
+                        form.render();
+                    });
+                },
+                yes:function () {
+                    submitForm("/goods/updateGoods")
+                }
+            });
+        }
+
+        //监控模糊查询按钮事件
+        form.on("submit(doSearch)", function (data) {
+            tableIns.reload({
+                where: data.field,
+                page: {
+                    curr: 1
+                }
+            });
+            return false;
+        });
+
+        //删除
+        function deleteGoods(data) {
+            layer.confirm('你确定要删除【' + data.name + '】这个商品吗？', {icon: 3, title: '提示'}, function (index) {
+                $.post("/goods/deleteGoods", {id: data.id},function (res) {
+                    if (res.code == 200) {
+                        tableIns.reload({
+                            where:"",
+                        });
+                    }
+                    layer.msg(res.msg);
+                });
+                layer.close(index);
+            });
+        }
+
+        function submitForm(url){
+            form.on("submit(doSubmit)",function (data) {
+                $.post(url,data.field,function (res) {
+                    if (res.code==200){
+                        tableIns.reload();
+                    }
+                    layer.msg(res.msg);
+                    layer.close(mainIndex);
+                });
+                return false;
+            });
+        }
+    });
+
+</script>
+
+</body>
+</html>

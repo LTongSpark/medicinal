@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>微信用户管理页面</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/resources/lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="/resources/css/public.css" media="all">
+    <style>
+        .layui-table-page .layui-laypage {
+            margin: 0;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <fieldset class="table-search-fieldset">
+            <legend>搜索信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">用户昵称</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="nickName" id="nickName" class="layui-input "
+                                       placeholder="请输入昵称">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="doSearch"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary"><i
+                                    class="layui-icon layui-icon-refresh"></i><span>重置</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+
+        <!--数据表格-->
+        <div>
+            <table class="layui-hide" id="userTable" lay-filter="userTable"></table>
+            <div id="loginfoRowBar" style="display: none;">
+                <button type="button" lay-event="delete"  class="layui-btn layui-btn-sm layui-btn-danger"><i
+                        class="layui-icon layui-icon-delete"></i>删除
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="/resources/lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script type="text/javascript">
+    layui.use(['jquery', 'form', 'layer', 'laydate', 'table','upload'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var layer = layui.layer;
+        var laydate = layui.laydate;
+        var table = layui.table;
+        var upload = layui.upload;
+        //初始化时间选择器
+        laydate.render({
+            elem: "#startTime",
+            type: "datetime"
+        });
+        laydate.render({
+            elem: "#endTime",
+            type: "datetime"
+        });
+
+        //初始化表格
+        var tableIns = table.render({
+            elem: "#userTable",
+            title: "收货人地址数据表格",
+            url: "/user/loadAllUser",
+            page: true,
+            cols: [ [
+                {field:'id',title:'ID',align:'center'},
+                {field:'openid',title:'openid',align: 'center'},
+                {field:'coverImg',title:'头像',align: 'center',templet:function (d) {
+                        return '<img src=/file/showImageByPath?path='+d.avatarUrl+ '/>'
+                    }
+                },
+                {field:'nickName',title:'昵称',align: 'center'},
+                {field:'gender',title:'性别',align:'center',templet:function (d) {
+                        let str = '';
+                        switch (d.gender) {
+                            case 0:
+                                str = '未知';
+                                break;
+                            case 1:
+                                str = '男';
+                                break;
+                            case 2:
+                                str = '女';
+                                break;
+                        }
+                        return str;
+                    }},
+                {field:'country',title:'国家',align: 'center'},
+                {field:'province',title:'省级',align: 'center'},
+                {field:'city',title:'市级',align: 'center'},
+                {field:'createTime',title:'创建时间',align: 'center',templet:function (d) {
+                        return layui.util.toDateString(d.createTime);
+                    }
+                },
+                {field:'updateTime',title:'更新时间',align: 'center',templet:function (d) {
+                        return layui.util.toDateString(d.updateTime);
+                    }
+                }
+            ] ],
+            done:function (data, curr, count) {
+                hoverOpenImg();//显示大图
+                $('table tr').on('click',function(){
+                    $('table tr').css('background','');
+                    $(this).css('background','<%=PropKit.use("config.properties").get("table_color")%>');
+                });
+                //不是第一页时，如果当前返回的数据为0那么就返回上一页
+                if(data.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:curr-1
+                        }
+                    })
+                }
+            }
+        });
+
+        //监控模糊查询按钮事件
+        form.on("submit(doSearch)", function (data) {
+            tableIns.reload({
+                where: data.field,
+                page: {
+                    curr: 1
+                }
+            });
+            return false;
+        });
+
+        function hoverOpenImg(){
+            var img_show = null; // tips提示
+            $('td img').hover(function(){
+                var img = "<img class='img_msg' src='"+$(this).attr('src')+"' style='width:130px;' />";
+                img_show = layer.tips(img, this,{
+                    tips:[2, '#fff']
+                    ,area: ['160px']
+                });
+            },function(){
+                layer.close(img_show);
+            });
+            $('td img').attr('style','max-width:25px');
+        }
+    });
+
+</script>
+
+</body>
+</html>

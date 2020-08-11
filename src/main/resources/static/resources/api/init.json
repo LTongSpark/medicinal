@@ -1,0 +1,63 @@
+{
+  "homeInfo": {
+    "title": "首页",
+    "href": "/sys/toDeskManager"
+  },
+  "logoInfo": {
+    "title": "MEDICINAL",
+    "image": "/resources/images/logo1.png",
+    "href": ""
+  },
+  "menuInfo": [
+    {
+      "title": "常规管理",
+      "icon": "fa fa-address-book",
+      "href": "",
+      "target": "_self",
+      "child": [
+        {
+          "title": "订单管理",
+          "href": "/bus/toOrdersManager",
+          "icon": "fa fa-shopping-cart",
+          "target": "_self"
+        },
+        {
+          "title": "分类管理",
+          "href": "/bus/toGoodsTypeManager",
+          "icon": "fa fa-sort",
+          "target": "_self"
+        },
+        {
+          "title": "药材管理",
+          "href": "/bus/toGoodsManager",
+          "icon": "fa fa-angellist",
+          "target": "_self"
+        },
+        {
+          "title": "轮播图管理",
+          "href": "/bus/toAdvertisementManager",
+          "icon": "fa fa-anchor",
+          "target": "_self"
+        },
+        {
+          "title": "微信用户管理",
+          "href": "/bus/toUserManager",
+          "icon": "fa fa-weixin",
+          "target": "_self"
+        },
+        {
+          "title": "日志管理",
+          "href": "/sys/toLoginfoManager",
+          "icon": "fa fa-file-text-o",
+          "target": "_self"
+        },
+        {
+          "title": "图标管理",
+          "href": "/sys/toIconManager",
+          "icon": "fa fa-calendar",
+          "target": "_self"
+        }
+      ]
+    }
+  ]
+}
